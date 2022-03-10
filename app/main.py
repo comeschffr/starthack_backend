@@ -4,7 +4,11 @@ app= Flask(__name__)
 
 @app.route('/')
 def index():
+<<<<<<< HEAD
     return jsonify(["<h1>Welcome to my app bro through github (main branch)</h1>"])
+=======
+    return jsonify(["<h1>Welcome to my app bro through github</h1>"])
+>>>>>>> dbc440f (new feature added)
 
 
 
@@ -16,6 +20,11 @@ def register():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     return jsonify(["login bro"])
+
+
+@app.route('/new', methods=["GET"])
+def new_feature():
+    return jsonify(["good job accessing the new feature"])
 
 # from flask import Blueprint, request, json, jsonify
 # from .models import Student
