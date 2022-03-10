@@ -3,7 +3,7 @@ from starthackapp import (
     db,
     models,
 )
-from flask import jsonify
+from flask import jsonify, request
 
 
 @app.route('/')
@@ -21,15 +21,15 @@ def login():
     return jsonify('Just landed on the /login endpoint')
 
 
-@app.route('/add_user', methods=["GET", "POST"])
+@app.route('/add_user', methods=["POST"])
 def add_user():
-    new_user = models.User('Alex', 'alex@gmail.com')
+    new_user = models.User(request.form.get('name'), request.form.get('email'))
     db.session.add(new_user)
     db.session.commit()
     return jsonify('Added a new user successfully!')
 
 
-@app.route('/get_users', methods=["GET", "POST"])
+@app.route('/get_users', methods=["GET"])
 def get_users():
     users = models.User.query.all()
     users = [
