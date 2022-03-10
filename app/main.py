@@ -17,6 +17,11 @@ def register():
 def login():
     return jsonify(["login bro"])
 
+
+@app.route('/new', methods=["GET"])
+def new_feature():
+    return jsonify(["good job accessing the new feature"])
+
 # from flask import Blueprint, request, json, jsonify
 # from .models import Student
 # from software import db
