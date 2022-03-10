@@ -1,4 +1,4 @@
-from starthack import app, db
+from starthackapp import app, db
 
 
 class User(db.Model):
