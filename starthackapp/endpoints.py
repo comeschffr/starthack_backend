@@ -1,5 +1,5 @@
-from flask import Flask, jsonify
-app= Flask(__name__)
+from starthackapp import app, db
+from flask import jsonify
 
 
 @app.route('/')
