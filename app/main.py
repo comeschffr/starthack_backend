@@ -4,7 +4,7 @@ app= Flask(__name__)
 
 @app.route('/')
 def index():
-    return jsonify(["<h1>Welcome to my app bro through github trying auto deploy</h1>"])
+    return jsonify(["<h1>Welcome to my app bro through github (main branch)</h1>"])
 
 
 
