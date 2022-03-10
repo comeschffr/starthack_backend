@@ -4,11 +4,7 @@ app= Flask(__name__)
 
 @app.route('/')
 def index():
-<<<<<<< HEAD
     return jsonify(["<h1>Welcome to my app bro through github (main branch)</h1>"])
-=======
-    return jsonify(["<h1>Welcome to my app bro through github</h1>"])
->>>>>>> dbc440f (new feature added)
 
 
 
