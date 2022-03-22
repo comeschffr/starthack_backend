@@ -54,7 +54,7 @@ def get_heros():
             'profile_pic_url': hero.profile_pic_url,
         } for hero in heros
     ]
-    return jsonify(heros)
+    return jsonify({'results': heros})
 
 
 @app.route('/add_hero', methods=["POST"])
