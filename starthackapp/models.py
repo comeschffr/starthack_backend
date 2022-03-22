@@ -18,7 +18,6 @@ class Hero(db.Model):
 	world = db.Column(db.String(100))
 	profile_pic_url = db.Column(db.String(500))
 	likeness = db.Column(db.Enum(Likeness))
-	test_property = db.Column(db.Integer)
 
 	# A constructor function where we will pass the name and email of a user and it gets add as a new entry in the table.
 	def __init__(self, name, world=None, profile_pic_url=None):
