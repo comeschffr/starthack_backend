@@ -22,7 +22,7 @@ def login():
 
 
 @app.route('/test', methods=["GET", "POST"])
-def login():
+def test():
     return jsonify('Test endpoint')
 
 
