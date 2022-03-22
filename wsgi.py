@@ -1,4 +1,4 @@
-from starthackapp import app, db
+from starthackapp import app
 
 
 if __name__ == "__main__":
