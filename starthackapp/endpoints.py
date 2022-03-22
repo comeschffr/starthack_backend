@@ -51,6 +51,7 @@ def get_heros():
             'name': hero.name,
             'world': hero.world,
             'likeness': str(hero.likeness),
+            'profile_pic_url': hero.profile_pic_url,
         } for hero in heros
     ]
     return jsonify(heros)
@@ -58,11 +59,23 @@ def get_heros():
 
 @app.route('/add_hero', methods=["POST"])
 def add_hero():
-    new_hero = models.Hero(request.form.get('name'), request.form.get('world'))
+    new_hero = models.Hero(request.form.get('name'), request.form.get('world'), request.form.get('profile_pic_url'))
     db.session.add(new_hero)
     db.session.commit()
     return jsonify('Added a new hero successfully!')
 
+
+@app.route('/add_profile_pic', methods=["POST"])
+def add_pp_to_hero():
+    form_data = request.form
+    hero_id = form_data.get('hero_id')
+    pp_url = form_data.get('profile_pic_url')
+
+    hero = models.Hero.query.get(hero_id)
+
+    hero.profile_pic_url = pp_url
+    db.session.commit()
+    return jsonify(f'Added a new pp to ({hero.id}, {hero.name}) successfully!')
 
 
 @app.route('/swipe', methods=["POST"])
