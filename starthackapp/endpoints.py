@@ -21,11 +21,6 @@ def login():
     return jsonify('Just landed on the /login endpoint')
 
 
-@app.route('/test', methods=["GET", "POST"])
-def test():
-    return jsonify('Test endpoint')
-
-
 @app.route('/add_user', methods=["POST"])
 def add_user():
     new_user = models.User(request.form.get('name'), request.form.get('email'))
