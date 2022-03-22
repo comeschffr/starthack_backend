@@ -42,6 +42,20 @@ def login():
 #     return jsonify(users)
 
 
+@app.route('/get_heros', methods=["GET"])
+def get_heros():
+    heros = models.Hero.query.all()
+    heros = [
+        {
+            'id': hero.id,
+            'name': hero.name,
+            'world': hero.world,
+            'likeness': str(hero.likeness),
+        } for hero in heros
+    ]
+    return jsonify(heros)
+
+
 @app.route('/add_hero', methods=["POST"])
 def add_hero():
     new_hero = models.Hero(request.form.get('name'), request.form.get('world'))
@@ -57,7 +71,7 @@ def swipe():
     hero_id = form_data.get('hero_id')
     swipe_dir = form_data.get('swipe_dir')
 
-    hero = models.User.query.get(hero_id)
+    hero = models.Hero.query.get(hero_id)
     if swipe_dir == 'right':
         hero.likeness = models.Likeness.LIKE
     elif swipe_dir == 'left':
