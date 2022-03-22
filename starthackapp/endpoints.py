@@ -96,3 +96,15 @@ def swipe():
     return jsonify('Swiped successfully!')
 
 
+@app.route('/edit_test_property', methods=["POST"])
+def edit_test_property():
+    form_data = request.form
+    hero_id = form_data.get('hero_id')
+    test_property = form_data.get('test_property')
+
+    hero = models.Hero.query.get(hero_id)
+    hero.test_property = test_property
+
+    db.session.commit()
+    return jsonify('Changed test property!')
+
