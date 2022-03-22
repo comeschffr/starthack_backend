@@ -88,7 +88,7 @@ def swipe():
     if swipe_dir == 'right':
         hero.likeness = models.Likeness.LIKE
     elif swipe_dir == 'left':
-        hero.likeness = models.Likeness.NO_LIKE
+        hero.likeness = models.Likeness.UNLIKE
     elif swipe_dir == 'up':
         hero.likeness = models.Likeness.SUPER_LIKE
 

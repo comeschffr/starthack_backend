@@ -4,7 +4,7 @@ import enum
 
 class Likeness(enum.Enum):
 	LIKE = 'LIKE'
-	NO_LIKE = 'NO_LIKE'
+	UNLIKE = 'UNLIKE'
 	SUPER_LIKE = 'SUPER_LIKE'
 
 
