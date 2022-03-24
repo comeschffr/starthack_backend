@@ -16,6 +16,8 @@ migrate = Migrate(app, db)
 import starthackapp.models
 db.create_all()
 
-import starthackapp.endpoints
 
 tmdb.API_KEY = '87a6f0d8cbc219995ea5f138f0456c05'
+
+
+import starthackapp.endpoints
