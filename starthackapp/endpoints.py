@@ -3,9 +3,10 @@ from starthackapp import (
     db,
     models,
     tmdb,
-    ig_client,
 )
 from flask import jsonify, request
+from instagrapi import Client
+import pickle
 
 
 @app.route('/')
@@ -43,15 +44,14 @@ def get_next_movies():
     config = tmdb.Configuration()
     base_url = config.info()['images']['secure_base_url']
 
-    # movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
-    movies = [tmdb.Movies(movie_id) for movie_id in [603]]
+    movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
     ig_shorts_list = []
     for movie in movies:
         movie.info()
         movie.credits()
         movie.images()
-        ig_hashtag = ''.join(filter(str.isalpha, movie.title))+'edit'
-        ig_shorts_list.append([str(media.dict()['video_url']) for media in ig_client.hashtag_medias_top(ig_hashtag, amount=3)])
+        ig_shorts = models.InstagramShort.query.filter(models.InstagramShort.movie_id == movie.id).all()
+        ig_shorts_list.append([ig_short.short_url for ig_short in ig_shorts])
 
     movies_dict = [
         {
@@ -70,6 +70,43 @@ def get_next_movies():
     ]
 
     return jsonify({'results': movies_dict})
+
+
+
+@app.route('/add_ig_short', methods=["POST"])
+def add_ig_short():
+    movie_id = request.form.get('movie_id')
+    movie = tmdb.Movies(movie_id)
+    movie.info()
+    ig_hashtag = ''.join(filter(str.isalpha, movie.title)).lower()+'edit'
+    print(f'ig_hashtag: {ig_hashtag}')
+
+    with open("starthackapp/ig_client_object_file.txt", "rb") as f:
+        bytes_read = f.read()
+        ig_client = pickle.loads(bytes_read)
+
+    medias = ig_client.hashtag_medias_top(ig_hashtag, amount=3)
+    print(medias)
+
+    for media in medias:
+        new_ig_short = models.InstagramShort(movie.id, str(media.dict()['video_url']))
+        db.session.add(new_ig_short)
+        db.session.commit()
+
+    return jsonify('Added a new movie shorts successfully!')
+
+@app.route('/get_movie_shorts', methods=["GET"])
+def get_movie_shorts():
+    shorts = models.InstagramShort.query.all()
+    shorts = [
+        {
+            'id': short.id,
+            'movie_id': short.movie_id,
+            'short_url': short.short_url,
+        } for short in shorts
+    ]
+    return jsonify(shorts)
+
 
 
 

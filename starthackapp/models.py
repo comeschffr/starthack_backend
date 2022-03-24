@@ -8,6 +8,18 @@ class Likeness(enum.Enum):
 	SUPER_LIKE = 'SUPER_LIKE'
 
 
+class InstagramShort(db.Model):
+	__tablename__ = "instagram_short"
+	id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+	movie_id = db.Column(db.Integer)
+	short_url = db.Column(db.String(10000))
+
+	def __init__(self, movie_id, short_url):
+		self.movie_id = movie_id
+		self.short_url = short_url
+
+
+
 class Hero(db.Model):
 	# Defines the Table Name user
 	__tablename__ = "hero"
