@@ -13,6 +13,38 @@ import pickle
 def index():
     return jsonify('Welcome to my app bro (main branch)')
 
+def bonjour():
+    with app.app_context():
+        with open("starthackapp/ig_client_object_file.txt", "rb") as f:
+            bytes_read = f.read()
+            ig_client = pickle.loads(bytes_read)
+        print(type(ig_client))
+
+        movies = models.Movie.query.all()
+        movie_ids = [movie.movie_id for movie in movies]
+        print(movie_ids)
+
+        for i, movie_id in enumerate(movie_ids):
+            print(f'\n\n\n\n\n>>>>>>>>>>>>>>>>> movie {i+1}/{len(movie_ids)} | movie_id: {movie_id}')
+            movie = tmdb.Movies(movie_id)
+            movie.info()
+            ig_hashtag = ''.join(filter(str.isalpha, movie.title)).lower()+'edit'
+            print(f'ig_hashtag: {ig_hashtag}')
+
+            medias = ig_client.hashtag_medias_top(ig_hashtag, amount=3)
+            print(medias)
+
+            for media in medias:
+                video_url = media.dict()['video_url']
+                if not video_url:
+                    print('No video URL found...')
+                    continue
+                new_ig_short = models.InstagramShort(movie.id, str(video_url))
+                db.session.add(new_ig_short)
+                db.session.commit()
+                print('Just added a new short!')
+
+        return jsonify('function bonjour()')
 
 def find_US_trailer(videos):
     videos = videos['results']
@@ -29,14 +61,13 @@ def get_top3_cast(full_cast):
         top3_cast.append(actor['name'])
     return top3_cast
 
-
-@app.route('/get_next_movies', methods=["GET"])
-def get_next_movies():
+def get_movies_from_ids(movies_ids):
     config = tmdb.Configuration()
     base_url = config.info()['images']['secure_base_url']
 
-    movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
+    movies = [tmdb.Movies(movie_id) for movie_id in movies_ids]
     ig_shorts_list = []
+
     for movie in movies:
         movie.info()
         movie.credits()
@@ -60,7 +91,41 @@ def get_next_movies():
         } for movie, ig_shorts in zip(movies, ig_shorts_list)
     ]
 
+    return movies_dict
+
+
+@app.route('/get_next_movies', methods=["GET"])
+def get_next_movies():
+    movies_ids = [603, 675, 604, 106646, 190859]
+    movies_dict = get_movies_from_ids(movies_ids)
+
     return jsonify({'results': movies_dict})
+
+
+@app.route('/get_favorites', methods=["GET"])
+def get_favorites():
+    fav_movies_db = models.MovieSwipe.query.filter(
+        models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
+    ).order_by(
+        models.MovieSwipe.id.desc()
+    ).all()
+    fav_movies_ids = [movie.movie_id for movie in fav_movies_db]
+    movies_dict = get_movies_from_ids(fav_movies_ids)
+
+    return jsonify({'results': movies_dict})
+
+
+# @app.route('/get_suggestions', methods=["GET"])
+# def get_suggestions():
+#     fav_movies_db = models.MovieSwipe.query.filter(
+#         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
+#     ).order_by(
+#         models.MovieSwipe.id.desc()
+#     ).all()
+#     fav_movies_ids = [movie.movie_id for movie in fav_movies_db]
+#     movies_dict = get_movies_from_ids(fav_movies_ids)
+
+#     return jsonify({'results': movies_dict})
 
 
 @app.route('/add_ig_short', methods=["POST"])
@@ -219,7 +284,3 @@ def add_all_movies():
         db.session.commit()
 
     return jsonify('Added all movies successfully!')
-
-
-
-
