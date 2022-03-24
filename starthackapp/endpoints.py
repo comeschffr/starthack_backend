@@ -43,13 +43,15 @@ def get_next_movies():
     config = tmdb.Configuration()
     base_url = config.info()['images']['secure_base_url']
 
-    movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
-    ig_shorts = []
+    # movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
+    movies = [tmdb.Movies(movie_id) for movie_id in [603]]
+    ig_shorts_list = []
     for movie in movies:
         movie.info()
         movie.credits()
         movie.images()
-        ig_shorts_list.append(str(cl.hashtag_medias_top('thematrixedit', amount=3).dict()['video_url']))
+        ig_hashtag = ''.join(filter(str.isalpha, movie.title))+'edit'
+        ig_shorts_list.append([str(media.dict()['video_url']) for media in ig_client.hashtag_medias_top(ig_hashtag, amount=3)])
 
     movies_dict = [
         {
