@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+import tmdbsimple as tmdb
 
 
 app = Flask(__name__)
@@ -16,3 +17,5 @@ import starthackapp.models
 db.create_all()
 
 import starthackapp.endpoints
+
+tmdb.API_KEY = '87a6f0d8cbc219995ea5f138f0456c05'
