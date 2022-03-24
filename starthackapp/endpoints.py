@@ -113,6 +113,8 @@ def swipe():
         movie_swipe = models.MovieSwipe(movie_id, models.Swipe.DISLIKE)
     elif swipe == 'up':
         movie_swipe = models.MovieSwipe(movie_id, models.Swipe.SUPER_LIKE)
+    else:
+        return jsonify('Swiped unsuccessful!')
 
     db.session.add(movie_swipe)
     db.session.commit()
@@ -124,10 +126,10 @@ def get_movie_swipes():
     swipes = models.MovieSwipe.query.all()
     swipes = [
         {
-            'id': swipe.id,
-            'movie_id': swipe.movie_id,
-            'swipe': swipe.swipe,
-        } for swipe in swipes
+            'id': swipe_obj.id,
+            'movie_id': swipe_obj.movie_id,
+            'swipe': str(swipe_obj.swipe),
+        } for swipe_obj in swipes
     ]
     return jsonify(swipes)
 
@@ -142,4 +144,82 @@ def get_movies():
         } for movie in movies
     ]
     return jsonify(movies)
+
+
+@app.route('/add_all_movies', methods=["GET"])
+def add_all_movies():
+    movies_ids = [
+        77338,
+        356305,
+        615904,
+        550988,
+        587807,
+        646380,
+        57214,
+        771,
+        772,
+        455974,
+        8095,
+        696806,
+        823625,
+        760926,
+        928381,
+        512195,
+        476669,
+        768744,
+        928999,
+        753232,
+        585083,
+        476669,
+        774825,
+        676705,
+        580489,
+        624860,
+        425909,
+        635302,
+        459151,
+        13632,
+        205321,
+        523849,
+        438970,
+        390989,
+        2899,
+        9642,
+        9564,
+        818647,
+        511809,
+        744275,
+        79014,
+        24021,
+        597,
+        61979,
+        216015,
+        138832,
+        646385,
+        460458,
+        632727,
+        423108,
+        138843,
+        72190,
+        72331,
+        396535,
+        439079,
+        126889,
+        190859,
+        2105,
+        1359,
+        4982,
+        158015,
+        316727,
+    ]
+    
+    for movie_id in movies_ids:
+        new_movie = models.Movie(movie_id)
+        db.session.add(new_movie)
+        db.session.commit()
+
+    return jsonify('Added all movies successfully!')
+
+
+
 
