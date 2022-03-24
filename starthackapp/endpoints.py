@@ -199,6 +199,15 @@ def get_movie_swipes():
     return jsonify(swipes)
 
 
+@app.route('/reset_movie_swipes', methods=["GET"])
+def reset_movie_swipes():
+    movie_swipes = models.MovieSwipe.query.all()
+    for movie_swipe in movie_swipes:
+        db.session.delete(movie_swipe)
+    db.session.commit()
+    return jsonify("Deleted all swipes!")
+
+
 @app.route('/get_movies', methods=["GET"])
 def get_movies():
     movies = models.Movie.query.all()
