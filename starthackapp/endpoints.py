@@ -37,31 +37,34 @@ def get_top3_cast(full_cast):
         top3_cast.append(actor['name'])
     return top3_cast
 
-@app.route('/get_next_movie', methods=["GET"])
-def get_next_movie():
+@app.route('/get_next_movies', methods=["GET"])
+def get_next_movies():
     config = tmdb.Configuration()
     base_url = config.info()['images']['secure_base_url']
 
-    movie = tmdb.Movies(603)
-    movie_info = movie.info()
-    movie_credits = movie.credits()
-    movie.images()
+    movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
+    for movie in movies:
+        movie.info()
+        movie.credits()
+        movie.images()
 
-    movie_dict = {
-        'movie_id': movie_info['id'],
-        'title': movie_info['title'],
-        'release_date': int(movie_info['release_date'][:4]),
-        'poster_url': base_url+'original'+movie_info['poster_path'],
-        'trailer_url': 'https://www.youtube.com/watch?v='+find_US_trailer(movie.videos()),
-        'plot': movie_info['overview'],
-        'genres': [genre_obj['name'] for genre_obj in movie_info['genres']],
-        'rating': movie_info['vote_average'],
-        'nb_of_ratings': movie_info['vote_count'],
-        'top3_cast': get_top3_cast(movie_credits['cast']),
-        # 'shorts_urls': shorts_urls,
-    }
+    movies_dict = [
+        {
+            'movie_id': movie.id,
+            'title': movie.title,
+            'release_date': int(movie.release_date[:4]),
+            'poster_url': base_url+'original'+movie.poster_path,
+            'trailer_url': 'https://www.youtube.com/watch?v='+find_US_trailer(movie.videos()),
+            'plot': movie.overview,
+            'genres': [genre_obj['name'] for genre_obj in movie.genres],
+            'rating': movie.vote_average,
+            'nb_of_ratings': movie.vote_count,
+            'top3_cast': get_top3_cast(movie.cast),
+            # 'shorts_urls': shorts_urls,
+        } for movie in movies
+    ]
 
-    return jsonify(movie_dict)
+    return jsonify({'results': movies_dict})
 
 
 
