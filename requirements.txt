@@ -2,3 +2,5 @@ flask
 gunicorn
 Flask-SQLAlchemy
 psycopg2
+Flask-Migrate
+tmdbsimple
