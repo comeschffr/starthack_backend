@@ -96,7 +96,8 @@ def get_movies_from_ids(movies_ids):
 
 @app.route('/get_next_movies', methods=["GET"])
 def get_next_movies():
-    movies_ids = [603, 675, 604, 106646, 190859]
+    # movies_ids = models.Movie.query.all()
+    movies_ids = [77338, 356305, 615904, 550988, 587807]
     movies_dict = get_movies_from_ids(movies_ids)
 
     return jsonify({'results': movies_dict})
@@ -113,19 +114,6 @@ def get_favorites():
     movies_dict = get_movies_from_ids(fav_movies_ids)
 
     return jsonify({'results': movies_dict})
-
-
-# @app.route('/get_suggestions', methods=["GET"])
-# def get_suggestions():
-#     fav_movies_db = models.MovieSwipe.query.filter(
-#         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
-#     ).order_by(
-#         models.MovieSwipe.id.desc()
-#     ).all()
-#     fav_movies_ids = [movie.movie_id for movie in fav_movies_db]
-#     movies_dict = get_movies_from_ids(fav_movies_ids)
-
-#     return jsonify({'results': movies_dict})
 
 
 @app.route('/add_ig_short', methods=["POST"])
