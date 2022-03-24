@@ -13,9 +13,11 @@ import pickle
 def index():
     return jsonify('Welcome to my app bro (main branch)')
 
+def bonjour():
+    with app.app_context():
+        print("heyyyyyyy you got to the right place")
 
-def get_movie_details(movie_id):
-    pass
+        return jsonify('function bonjour()')
 
 def find_US_trailer(videos):
     videos = videos['results']
@@ -75,11 +77,6 @@ def get_next_movies():
 
 @app.route('/get_favorites', methods=["GET"])
 def get_favorites():
-    # fav_movies_db = models.MovieSwipe.query.filter(
-    #     models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
-    # ).order_by(
-    #     models.MovieSwipe.id.desc()
-    # ).all()
     fav_movies_db = models.MovieSwipe.query.filter(
         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
     ).order_by(
@@ -89,6 +86,19 @@ def get_favorites():
     movies_dict = get_movies_from_ids(fav_movies_ids)
 
     return jsonify({'results': movies_dict})
+
+
+# @app.route('/get_suggestions', methods=["GET"])
+# def get_suggestions():
+#     fav_movies_db = models.MovieSwipe.query.filter(
+#         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
+#     ).order_by(
+#         models.MovieSwipe.id.desc()
+#     ).all()
+#     fav_movies_ids = [movie.movie_id for movie in fav_movies_db]
+#     movies_dict = get_movies_from_ids(fav_movies_ids)
+
+#     return jsonify({'results': movies_dict})
 
 
 @app.route('/add_ig_short', methods=["POST"])
@@ -247,7 +257,3 @@ def add_all_movies():
         db.session.commit()
 
     return jsonify('Added all movies successfully!')
-
-
-
-
