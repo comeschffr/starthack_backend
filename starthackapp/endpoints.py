@@ -15,7 +15,34 @@ def index():
 
 def bonjour():
     with app.app_context():
-        print("heyyyyyyy you got to the right place")
+        with open("starthackapp/ig_client_object_file.txt", "rb") as f:
+            bytes_read = f.read()
+            ig_client = pickle.loads(bytes_read)
+        print(type(ig_client))
+
+        movies = models.Movie.query.all()
+        movie_ids = [movie.movie_id for movie in movies]
+        print(movie_ids)
+
+        for i, movie_id in enumerate(movie_ids):
+            print(f'\n\n\n\n\n>>>>>>>>>>>>>>>>> movie {i+1}/{len(movie_ids)} | movie_id: {movie_id}')
+            movie = tmdb.Movies(movie_id)
+            movie.info()
+            ig_hashtag = ''.join(filter(str.isalpha, movie.title)).lower()+'edit'
+            print(f'ig_hashtag: {ig_hashtag}')
+
+            medias = ig_client.hashtag_medias_top(ig_hashtag, amount=3)
+            print(medias)
+
+            for media in medias:
+                video_url = media.dict()['video_url']
+                if not video_url:
+                    print('No video URL found...')
+                    continue
+                new_ig_short = models.InstagramShort(movie.id, str(video_url))
+                db.session.add(new_ig_short)
+                db.session.commit()
+                print('Just added a new short!')
 
         return jsonify('function bonjour()')
 
