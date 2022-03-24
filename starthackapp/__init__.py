@@ -3,6 +3,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import tmdbsimple as tmdb
+from instagrapi import Client
 
 
 app = Flask(__name__)
@@ -16,6 +17,11 @@ migrate = Migrate(app, db)
 import starthackapp.models
 db.create_all()
 
-import starthackapp.endpoints
 
 tmdb.API_KEY = '87a6f0d8cbc219995ea5f138f0456c05'
+
+ig_client = Client()
+ig_client.login("come.schffr", "'DZPP2CtGeMUiJG")
+
+
+import starthackapp.endpoints

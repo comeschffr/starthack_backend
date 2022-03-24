@@ -3,6 +3,7 @@ from starthackapp import (
     db,
     models,
     tmdb,
+    ig_client,
 )
 from flask import jsonify, request
 
@@ -43,10 +44,12 @@ def get_next_movies():
     base_url = config.info()['images']['secure_base_url']
 
     movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
+    ig_shorts = []
     for movie in movies:
         movie.info()
         movie.credits()
         movie.images()
+        ig_shorts_list.append(str(cl.hashtag_medias_top('thematrixedit', amount=3).dict()['video_url']))
 
     movies_dict = [
         {
@@ -60,8 +63,8 @@ def get_next_movies():
             'rating': movie.vote_average,
             'nb_of_ratings': movie.vote_count,
             'top3_cast': get_top3_cast(movie.cast),
-            # 'shorts_urls': shorts_urls,
-        } for movie in movies
+            'shorts_urls': ig_shorts,
+        } for movie, ig_shorts in zip(movies, ig_shorts_list)
     ]
 
     return jsonify({'results': movies_dict})
