@@ -22,16 +22,52 @@ def login():
     return jsonify('Just landed on the /login endpoint')
 
 
+def find_US_title(alternative_titles):
+    titles = alternative_titles['titles']
+    for title in titles:
+        if title['iso_3166_1'] == 'US':
+            return title['title']
+    else:
+        return titles[0]['title']
+
+def find_US_release_date(release_dates):
+    dates = release_dates['results']
+    for date in dates:
+        if date['iso_3166_1'] == 'US':
+            return int(date['release_dates'][0]['release_date'][:4])
+    else:
+        return int(dates[0]['release_dates'][0]['release_date'][:4])
+
+def find_US_best_poster(posters):
+    for poster in posters:
+        if poster['iso_639_1'] == 'en':
+            return poster['file_path']
+    else:
+        return posters[0]['file_path']
+
+def find_US_trailer(videos):
+    videos = videos['results']
+    for video in videos:
+        if video['iso_639_1'] == 'en':
+            return video['key']
+    else:
+        return videos[0]['key']
+
+
 @app.route('/get_next_movie', methods=["GET"])
 def get_next_movie():
+    config = tmdb.Configuration()
+    base_url = config.info()['images']['secure_base_url']
+
     movie = tmdb.Movies(603)
+    movie.images()
     print(movie)
     movie_dict = {
-    #     'movie_id': movie_id,
-    #     'title': title,
-    #     'release_date': release_date,
-    #     'poster_url': poster_url,
-    #     'trailer_url': trailer_url,
+        'movie_id': movie.id,
+        'title': find_US_title(movie.alternative_titles()),
+        'release_date': find_US_release_date(movie.release_dates()),
+        'poster_url': base_url+'original'+find_US_best_poster(movie.posters),
+        'trailer_url': 'https://www.youtube.com/watch?v='+find_US_trailer(movie.videos()),
         # 'shorts_urls': shorts_urls,
     }
 
