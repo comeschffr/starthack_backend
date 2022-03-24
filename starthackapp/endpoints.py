@@ -32,13 +32,11 @@ def get_top3_cast(full_cast):
         top3_cast.append(actor['name'])
     return top3_cast
 
-
-@app.route('/get_next_movies', methods=["GET"])
-def get_next_movies():
+def get_movies_from_ids(movies_ids):
     config = tmdb.Configuration()
     base_url = config.info()['images']['secure_base_url']
 
-    movies = [tmdb.Movies(movie_id) for movie_id in [603, 675, 604, 106646, 190859]]
+    movies = [tmdb.Movies(movie_id) for movie_id in movies_ids]
     ig_shorts_list = []
 
     for movie in movies:
@@ -63,43 +61,32 @@ def get_next_movies():
             'shorts_urls': ig_shorts,
         } for movie, ig_shorts in zip(movies, ig_shorts_list)
     ]
+
+    return movies_dict
+
+
+@app.route('/get_next_movies', methods=["GET"])
+def get_next_movies():
+    movies_ids = [603, 675, 604, 106646, 190859]
+    movies_dict = get_movies_from_ids(movies_ids)
 
     return jsonify({'results': movies_dict})
 
 
 @app.route('/get_favorites', methods=["GET"])
 def get_favorites():
-    config = tmdb.Configuration()
-    base_url = config.info()['images']['secure_base_url']
-
-    fav_movies_db = models.MovieSwipe.query.filter(models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE).all()
+    # fav_movies_db = models.MovieSwipe.query.filter(
+    #     models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
+    # ).order_by(
+    #     models.MovieSwipe.id.desc()
+    # ).all()
+    fav_movies_db = models.MovieSwipe.query.filter(
+        models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
+    ).order_by(
+        models.MovieSwipe.id.desc()
+    ).all()
     fav_movies_ids = [movie.movie_id for movie in fav_movies_db]
-
-    movies = [tmdb.Movies(movie_id) for movie_id in fav_movies_ids]
-    ig_shorts_list = []
-
-    for movie in movies:
-        movie.info()
-        movie.credits()
-        movie.images()
-        ig_shorts = models.InstagramShort.query.filter(models.InstagramShort.movie_id == movie.id).all()
-        ig_shorts_list.append([ig_short.short_url for ig_short in ig_shorts])
-
-    movies_dict = [
-        {
-            'movie_id': movie.id,
-            'title': movie.title,
-            'release_date': int(movie.release_date[:4]),
-            'poster_url': base_url+'original'+movie.poster_path,
-            'trailer_url': 'https://www.youtube.com/watch?v='+find_US_trailer(movie.videos()),
-            'plot': movie.overview,
-            'genres': [genre_obj['name'] for genre_obj in movie.genres],
-            'rating': movie.vote_average,
-            'nb_of_ratings': movie.vote_count,
-            'top3_cast': get_top3_cast(movie.cast),
-            'shorts_urls': ig_shorts,
-        } for movie, ig_shorts in zip(movies, ig_shorts_list)
-    ]
+    movies_dict = get_movies_from_ids(fav_movies_ids)
 
     return jsonify({'results': movies_dict})
 
