@@ -22,29 +22,6 @@ def login():
     return jsonify('Just landed on the /login endpoint')
 
 
-def find_US_title(alternative_titles):
-    titles = alternative_titles['titles']
-    for title in titles:
-        if title['iso_3166_1'] == 'US':
-            return title['title']
-    else:
-        return titles[0]['title']
-
-def find_US_release_date(release_dates):
-    dates = release_dates['results']
-    for date in dates:
-        if date['iso_3166_1'] == 'US':
-            return int(date['release_dates'][0]['release_date'][:4])
-    else:
-        return int(dates[0]['release_dates'][0]['release_date'][:4])
-
-def find_US_best_poster(posters):
-    for poster in posters:
-        if poster['iso_639_1'] == 'en':
-            return poster['file_path']
-    else:
-        return posters[0]['file_path']
-
 def find_US_trailer(videos):
     videos = videos['results']
     for video in videos:
@@ -53,6 +30,12 @@ def find_US_trailer(videos):
     else:
         return videos[0]['key']
 
+def get_top3_cast(full_cast):
+    top3_cast = []
+    for i, actor in enumerate(full_cast):
+        if i > 2: break
+        top3_cast.append(actor['name'])
+    return top3_cast
 
 @app.route('/get_next_movie', methods=["GET"])
 def get_next_movie():
@@ -60,14 +43,21 @@ def get_next_movie():
     base_url = config.info()['images']['secure_base_url']
 
     movie = tmdb.Movies(603)
+    movie_info = movie.info()
+    movie_credits = movie.credits()
     movie.images()
-    print(movie)
+
     movie_dict = {
-        'movie_id': movie.id,
-        'title': find_US_title(movie.alternative_titles()),
-        'release_date': find_US_release_date(movie.release_dates()),
-        'poster_url': base_url+'original'+find_US_best_poster(movie.posters),
+        'movie_id': movie_info['id'],
+        'title': movie_info['title'],
+        'release_date': int(movie_info['release_date'][:4]),
+        'poster_url': base_url+'original'+movie_info['poster_path'],
         'trailer_url': 'https://www.youtube.com/watch?v='+find_US_trailer(movie.videos()),
+        'plot': movie_info['overview'],
+        'genres': [genre_obj['name'] for genre_obj in movie_info['genres']],
+        'rating': movie_info['vote_average'],
+        'nb_of_ratings': movie_info['vote_count'],
+        'top3_cast': get_top3_cast(movie_credits['cast']),
         # 'shorts_urls': shorts_urls,
     }
 
