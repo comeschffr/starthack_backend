@@ -14,16 +14,6 @@ def index():
     return jsonify('Welcome to my app bro (main branch)')
 
 
-@app.route('/register', methods=["GET", "POST"])
-def register():
-    return jsonify('Just landed on the /register endpoint')
-
-
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    return jsonify('Just landed on the /login endpoint')
-
-
 def find_US_trailer(videos):
     videos = videos['results']
     for video in videos:
@@ -38,6 +28,7 @@ def get_top3_cast(full_cast):
         if i > 2: break
         top3_cast.append(actor['name'])
     return top3_cast
+
 
 @app.route('/get_next_movies', methods=["GET"])
 def get_next_movies():
@@ -72,7 +63,6 @@ def get_next_movies():
     return jsonify({'results': movies_dict})
 
 
-
 @app.route('/add_ig_short', methods=["POST"])
 def add_ig_short():
     movie_id = request.form.get('movie_id')
@@ -89,11 +79,14 @@ def add_ig_short():
     print(medias)
 
     for media in medias:
-        new_ig_short = models.InstagramShort(movie.id, str(media.dict()['video_url']))
+        video_url = media.dict()['video_url']
+        if not video_url: continue
+        new_ig_short = models.InstagramShort(movie.id, str(video_url))
         db.session.add(new_ig_short)
         db.session.commit()
 
     return jsonify('Added a new movie shorts successfully!')
+
 
 @app.route('/get_movie_shorts', methods=["GET"])
 def get_movie_shorts():
@@ -108,78 +101,45 @@ def get_movie_shorts():
     return jsonify(shorts)
 
 
+@app.route('/swipe', methods=["POST"])
+def swipe():
+    form_data = request.form
+    movie_id = form_data.get('movie_id')
+    swipe = form_data.get('swipe')
+
+    if swipe == 'right':
+        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.LIKE)
+    elif swipe == 'left':
+        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.DISLIKE)
+    elif swipe == 'up':
+        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.SUPER_LIKE)
+
+    db.session.add(movie_swipe)
+    db.session.commit()
+    return jsonify('Swiped successfully!')
 
 
-# @app.route('/add_user', methods=["POST"])
-# def add_user():
-#     new_user = models.User(request.form.get('name'), request.form.get('email'))
-#     db.session.add(new_user)
-#     db.session.commit()
-#     return jsonify('Added a new user successfully!')
+@app.route('/get_movie_swipes', methods=["GET"])
+def get_movie_swipes():
+    swipes = models.MovieSwipe.query.all()
+    swipes = [
+        {
+            'id': swipe.id,
+            'movie_id': swipe.movie_id,
+            'swipe': swipe.swipe,
+        } for swipe in swipes
+    ]
+    return jsonify(swipes)
 
 
-# @app.route('/get_users', methods=["GET"])
-# def get_users():
-#     users = models.User.query.all()
-#     users = [
-#         {
-#             'id': user.id,
-#             'name': user.name,
-#             'email': user.email,
-#         } for user in users
-#     ]
-#     return jsonify(users)
+@app.route('/get_movies', methods=["GET"])
+def get_movies():
+    movies = models.Movie.query.all()
+    movies = [
+        {
+            'id': movie.id,
+            'movie_id': movie.movie_id,
+        } for movie in movies
+    ]
+    return jsonify(movies)
 
-
-# @app.route('/get_heros', methods=["GET"])
-# def get_heros():
-#     heros = models.Hero.query.all()
-#     heros = [
-#         {
-#             'id': hero.id,
-#             'name': hero.name,
-#             'world': hero.world,
-#             'likeness': str(hero.likeness),
-#             'profile_pic_url': hero.profile_pic_url,
-#         } for hero in heros
-#     ]
-#     return jsonify({'results': heros})
-
-
-# @app.route('/add_hero', methods=["POST"])
-# def add_hero():
-#     new_hero = models.Hero(request.form.get('name'), request.form.get('world'), request.form.get('profile_pic_url'))
-#     db.session.add(new_hero)
-#     db.session.commit()
-#     return jsonify('Added a new hero successfully!')
-
-
-# @app.route('/add_profile_pic', methods=["POST"])
-# def add_pp_to_hero():
-#     form_data = request.form
-#     hero_id = form_data.get('hero_id')
-#     pp_url = form_data.get('profile_pic_url')
-
-#     hero = models.Hero.query.get(hero_id)
-
-#     hero.profile_pic_url = pp_url
-#     db.session.commit()
-#     return jsonify(f'Added a new pp to ({hero.id}, {hero.name}) successfully!')
-
-
-# @app.route('/swipe', methods=["POST"])
-# def swipe():
-#     form_data = request.form
-#     hero_id = form_data.get('hero_id')
-#     swipe_dir = form_data.get('swipe_dir')
-
-#     hero = models.Hero.query.get(hero_id)
-#     if swipe_dir == 'right':
-#         hero.likeness = models.Likeness.LIKE
-#     elif swipe_dir == 'left':
-#         hero.likeness = models.Likeness.UNLIKE
-#     elif swipe_dir == 'up':
-#         hero.likeness = models.Likeness.SUPER_LIKE
-
-#     db.session.commit()
-#     return jsonify('Swiped successfully!')
