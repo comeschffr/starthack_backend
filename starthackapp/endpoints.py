@@ -103,7 +103,7 @@ def get_next_movies():
     current_user = models.User.query.get(user_id)
     print(f'nb_of_swipes: {nb_of_swipes}')
     print(f'nb_user_matches: {current_user.nb_matches}')
-    if nb_of_swipes / 15 > current_user.nb_matches + 1:
+    if nb_of_swipes / 8 > current_user.nb_matches + 1:
         # send match
         matched_user_id = 2
         matched_user = models.User.query.get(matched_user_id)
@@ -119,7 +119,7 @@ def get_next_movies():
         print(movies_ids_already_swiped)
         movies_ids_not_swiped_yet = movies_ids - movies_ids_already_swiped
         print(movies_ids_not_swiped_yet)
-        movies_ids = random.sample(movies_ids_not_swiped_yet, 5)
+        movies_ids = random.sample(movies_ids_not_swiped_yet, 10)
         print(movies_ids)
         match_dict = {'match': False}
 
