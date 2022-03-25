@@ -99,15 +99,17 @@ def get_movies_from_ids(movies_ids):
 def get_next_movies():
     user_id = request.args.get('user_id', 1)
     nb_of_swipes = models.MovieSwipe.query.filter(models.MovieSwipe.user_id==user_id).count()
-    nb_user_matches = models.User.query.get(user_id).nb_matches
+    current_user = models.User.query.get(user_id)
     print(f'nb_of_swipes: {nb_of_swipes}')
-    print(f'nb_user_matches: {nb_user_matches}')
-    if nb_of_swipes % 5 == 0:
+    print(f'nb_user_matches: {current_user.nb_matches}')
+    if nb_of_swipes / 6 > current_user.nb_matches + 1:
         # send match
         matched_user_id = 2
         matched_user = models.User.query.get(matched_user_id)
         movies_ids = [matched_user.fav_movie_1, matched_user.fav_movie_2, matched_user.fav_movie_3]
         match_dict = {'match': True}
+        current_user.nb_matches += 1
+        db.session.commit()
     else:
         movies = models.Movie.query.all()
         next_movies = random.sample(movies, 5)
