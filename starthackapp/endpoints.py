@@ -107,11 +107,12 @@ def get_next_movies():
     else:
         movies_ids = [77338, 356305, 615904, 550988, 587807]
         match_dict = {'match': False}
-    
-    movies_dict = get_movies_from_ids(movies_ids)
-    movies_dict.update(match_dict)
 
-    return jsonify({'results': movies_dict})
+    movies_dict = get_movies_from_ids(movies_ids)
+    results_dict = {'results': movies_dict}
+    results_dict.update(match_dict)
+
+    return jsonify(results_dict)
 
 
 @app.route('/get_favorites', methods=["GET"])
