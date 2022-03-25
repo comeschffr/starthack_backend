@@ -7,6 +7,7 @@ from starthackapp import (
 from flask import jsonify, request
 from instagrapi import Client
 import pickle
+import random
 
 
 @app.route('/')
@@ -96,16 +97,37 @@ def get_movies_from_ids(movies_ids):
 
 @app.route('/get_next_movies', methods=["GET"])
 def get_next_movies():
-    # movies_ids = models.Movie.query.all()
-    movies_ids = [77338, 356305, 615904, 550988, 587807]
-    movies_dict = get_movies_from_ids(movies_ids)
+    user_id = request.args.get('user_id', 1)
+    nb_of_swipes = models.MovieSwipe.query.filter(models.MovieSwipe.user_id==user_id).count()
+    current_user = models.User.query.get(user_id)
+    print(f'nb_of_swipes: {nb_of_swipes}')
+    print(f'nb_user_matches: {current_user.nb_matches}')
+    if nb_of_swipes / 6 > current_user.nb_matches + 1:
+        # send match
+        matched_user_id = 2
+        matched_user = models.User.query.get(matched_user_id)
+        movies_ids = [matched_user.fav_movie_1, matched_user.fav_movie_2, matched_user.fav_movie_3]
+        match_dict = {'match': True}
+        current_user.nb_matches += 1
+        db.session.commit()
+    else:
+        movies = models.Movie.query.all()
+        next_movies = random.sample(movies, 5)
+        movies_ids = [movie.movie_id for movie in next_movies]
+        match_dict = {'match': False}
 
-    return jsonify({'results': movies_dict})
+    movies_dict = get_movies_from_ids(movies_ids)
+    results_dict = {'results': movies_dict}
+    results_dict.update(match_dict)
+
+    return jsonify(results_dict)
 
 
 @app.route('/get_favorites', methods=["GET"])
 def get_favorites():
+    user_id = request.args.get('user_id', 1)
     fav_movies_db = models.MovieSwipe.query.filter(
+        models.MovieSwipe.user_id == user_id,
         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
     ).order_by(
         models.MovieSwipe.id.desc()
@@ -116,29 +138,21 @@ def get_favorites():
     return jsonify({'results': movies_dict})
 
 
-@app.route('/add_ig_short', methods=["POST"])
-def add_ig_short():
-    movie_id = request.form.get('movie_id')
-    movie = tmdb.Movies(movie_id)
-    movie.info()
-    ig_hashtag = ''.join(filter(str.isalpha, movie.title)).lower()+'edit'
-    print(f'ig_hashtag: {ig_hashtag}')
+@app.route('/remove_favorite', methods=["POST"])
+def remove_favorite():
+    form_data = request.form
+    movie_id = form_data.get('movie_id')
+    user_id = form_data.get('user_id', 1)
 
-    with open("starthackapp/ig_client_object_file.txt", "rb") as f:
-        bytes_read = f.read()
-        ig_client = pickle.loads(bytes_read)
+    fav_movie = models.MovieSwipe.query.filter(
+        models.MovieSwipe.movie_id == movie_id,
+        models.MovieSwipe.user_id == user_id,
+    ).first()
 
-    medias = ig_client.hashtag_medias_top(ig_hashtag, amount=3)
-    print(medias)
+    fav_movie.swipe = models.Swipe.LIKE
 
-    for media in medias:
-        video_url = media.dict()['video_url']
-        if not video_url: continue
-        new_ig_short = models.InstagramShort(movie.id, str(video_url))
-        db.session.add(new_ig_short)
-        db.session.commit()
-
-    return jsonify('Added a new movie shorts successfully!')
+    db.session.commit()
+    return jsonify('Movie removed from favorites successfully!')
 
 
 @app.route('/get_movie_shorts', methods=["GET"])
@@ -159,13 +173,14 @@ def swipe():
     form_data = request.form
     movie_id = form_data.get('movie_id')
     swipe = form_data.get('swipe')
+    user_id = form_data.get('user_id', 1)
 
     if swipe == 'right':
-        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.LIKE)
+        movie_swipe = models.MovieSwipe(user_id, movie_id, models.Swipe.LIKE)
     elif swipe == 'left':
-        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.DISLIKE)
+        movie_swipe = models.MovieSwipe(user_id, movie_id, models.Swipe.DISLIKE)
     elif swipe == 'up':
-        movie_swipe = models.MovieSwipe(movie_id, models.Swipe.SUPER_LIKE)
+        movie_swipe = models.MovieSwipe(user_id, movie_id, models.Swipe.SUPER_LIKE)
     else:
         return jsonify('Swiped unsuccessful!')
 
@@ -180,6 +195,7 @@ def get_movie_swipes():
     swipes = [
         {
             'id': swipe_obj.id,
+            'user_id': swipe_obj.user_id,
             'movie_id': swipe_obj.movie_id,
             'swipe': str(swipe_obj.swipe),
         } for swipe_obj in swipes
@@ -281,3 +297,34 @@ def add_all_movies():
         db.session.commit()
 
     return jsonify('Added all movies successfully!')
+
+
+@app.route('/get_users', methods=["GET"])
+def get_users():
+    users = models.User.query.all()
+    users = [
+        {
+            'id': user.id,
+            'name': user.name,
+            'fav_movie_1': user.fav_movie_1,
+            'fav_movie_2': user.fav_movie_2,
+            'fav_movie_3': user.fav_movie_3,
+            'nb_matches': user.nb_matches,
+        } for user in users
+    ]
+    return jsonify(users)
+
+
+@app.route('/add_user', methods=["POST"])
+def add_user():
+    form_data = request.form
+    name = form_data.get('name')
+    fav_movie_1 = form_data.get('fav_movie_1')
+    fav_movie_2 = form_data.get('fav_movie_2')
+    fav_movie_3 = form_data.get('fav_movie_3')
+
+    new_user = models.User(name, fav_movie_1, fav_movie_2, fav_movie_3)
+
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify('New user added successfully!')
