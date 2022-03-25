@@ -7,6 +7,7 @@ from starthackapp import (
 from flask import jsonify, request
 from instagrapi import Client
 import pickle
+import random
 
 
 @app.route('/')
@@ -105,7 +106,9 @@ def get_next_movies():
         movies_ids = [matched_user.fav_movie_1, matched_user.fav_movie_2, matched_user.fav_movie_3]
         match_dict = {'match': True}
     else:
-        movies_ids = [77338, 356305, 615904, 550988, 587807]
+        movies = models.Movie.query.all()
+        next_movies = random.sample(movies, 5)
+        movies_ids = [movie.movie_id for movie in next_movies]
         match_dict = {'match': False}
 
     movies_dict = get_movies_from_ids(movies_ids)
