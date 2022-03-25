@@ -96,7 +96,7 @@ def get_movies_from_ids(movies_ids):
 
 @app.route('/get_next_movies', methods=["GET"])
 def get_next_movies():
-    user_id = 1
+    user_id = request.args.get('user_id', 1)
     nb_of_swipes = models.MovieSwipe.query.filter(models.MovieSwipe.user_id==user_id).count()
     if nb_of_swipes % 5 == 0:
         # send match
@@ -116,7 +116,7 @@ def get_next_movies():
 
 @app.route('/get_favorites', methods=["GET"])
 def get_favorites():
-    user_id = 1
+    user_id = request.args.get('user_id', 1)
     fav_movies_db = models.MovieSwipe.query.filter(
         models.MovieSwipe.user_id == user_id,
         models.MovieSwipe.swipe == models.Swipe.SUPER_LIKE
@@ -127,31 +127,6 @@ def get_favorites():
     movies_dict = get_movies_from_ids(fav_movies_ids)
 
     return jsonify({'results': movies_dict})
-
-
-@app.route('/add_ig_short', methods=["POST"])
-def add_ig_short():
-    movie_id = request.form.get('movie_id')
-    movie = tmdb.Movies(movie_id)
-    movie.info()
-    ig_hashtag = ''.join(filter(str.isalpha, movie.title)).lower()+'edit'
-    print(f'ig_hashtag: {ig_hashtag}')
-
-    with open("starthackapp/ig_client_object_file.txt", "rb") as f:
-        bytes_read = f.read()
-        ig_client = pickle.loads(bytes_read)
-
-    medias = ig_client.hashtag_medias_top(ig_hashtag, amount=3)
-    print(medias)
-
-    for media in medias:
-        video_url = media.dict()['video_url']
-        if not video_url: continue
-        new_ig_short = models.InstagramShort(movie.id, str(video_url))
-        db.session.add(new_ig_short)
-        db.session.commit()
-
-    return jsonify('Added a new movie shorts successfully!')
 
 
 @app.route('/get_movie_shorts', methods=["GET"])
@@ -172,7 +147,7 @@ def swipe():
     form_data = request.form
     movie_id = form_data.get('movie_id')
     swipe = form_data.get('swipe')
-    user_id = 1
+    user_id = form_data.get('user_id', 1)
 
     if swipe == 'right':
         movie_swipe = models.MovieSwipe(user_id, movie_id, models.Swipe.LIKE)
