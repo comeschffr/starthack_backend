@@ -119,7 +119,7 @@ def get_next_movies():
         print(movies_ids_already_swiped)
         movies_ids_not_swiped_yet = movies_ids - movies_ids_already_swiped
         print(movies_ids_not_swiped_yet)
-        movies_ids = random.sample(movies_ids_not_swiped_yet, 10)
+        movies_ids = random.sample(movies_ids_not_swiped_yet, min(5, len(movies_ids_not_swiped_yet)))
         print(movies_ids)
         match_dict = {'match': False}
 
@@ -215,6 +215,8 @@ def reset_movie_swipes():
     movie_swipes = models.MovieSwipe.query.all()
     for movie_swipe in movie_swipes:
         db.session.delete(movie_swipe)
+    user_1 = models.User.query.filter(models.User.id==1).first()
+    user_1.nb_matches = 0
     db.session.commit()
     return jsonify("Deleted all swipes!")
 
