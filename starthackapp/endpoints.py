@@ -99,6 +99,9 @@ def get_movies_from_ids(movies_ids):
 def get_next_movies():
     user_id = request.args.get('user_id', 1)
     nb_of_swipes = models.MovieSwipe.query.filter(models.MovieSwipe.user_id==user_id).count()
+    nb_user_matches = models.User.query.get(user_id).nb_matches
+    print(f'nb_of_swipes: {nb_of_swipes}')
+    print(f'nb_user_matches: {nb_user_matches}')
     if nb_of_swipes % 5 == 0:
         # send match
         matched_user_id = 2
@@ -131,6 +134,23 @@ def get_favorites():
     movies_dict = get_movies_from_ids(fav_movies_ids)
 
     return jsonify({'results': movies_dict})
+
+
+@app.route('/remove_favorite', methods=["POST"])
+def remove_favorite():
+    form_data = request.form
+    movie_id = form_data.get('movie_id')
+    user_id = form_data.get('user_id', 1)
+
+    fav_movie = models.MovieSwipe.query.filter(
+        models.MovieSwipe.movie_id == movie_id,
+        models.MovieSwipe.user_id == user_id,
+    ).first()
+
+    fav_movie.swipe = models.Swipe.LIKE
+
+    db.session.commit()
+    return jsonify('Movie removed from favorites successfully!')
 
 
 @app.route('/get_movie_shorts', methods=["GET"])
