@@ -47,9 +47,11 @@ class User(db.Model):
 	fav_movie_1 = db.Column(db.Integer)
 	fav_movie_2 = db.Column(db.Integer)
 	fav_movie_3 = db.Column(db.Integer)
+	nb_matches = db.Column(db.Integer)
 
 	def __init__(self, name, fav_movie_1, fav_movie_2, fav_movie_3):
 		self.name = name
 		self.fav_movie_1 = fav_movie_1
 		self.fav_movie_2 = fav_movie_2
 		self.fav_movie_3 = fav_movie_3
+		self.nb_matches = 0

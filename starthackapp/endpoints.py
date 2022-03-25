@@ -287,6 +287,7 @@ def get_users():
             'fav_movie_1': user.fav_movie_1,
             'fav_movie_2': user.fav_movie_2,
             'fav_movie_3': user.fav_movie_3,
+            'nb_matches': user.nb_matches,
         } for user in users
     ]
     return jsonify(users)
